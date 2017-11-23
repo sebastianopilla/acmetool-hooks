@@ -22,6 +22,6 @@ public interface Hook {
    * @param pHostname hostname to delete the TXT record for
    * @return true if the record was successfully deleted at all the authoritative nameservers of the domain, false otherwise
    */
-  boolean challengeEnd (String pHostname);
+  boolean challengeStop (String pHostname);
 
 }

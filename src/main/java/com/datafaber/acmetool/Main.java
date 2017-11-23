@@ -21,7 +21,7 @@ public class Main {
   private static final String CONFIGURATION = "config";
   private static final String COMMAND = "command";
   private static final String COMMAND_CHALLENGE_START = "challenge-dns-start";
-  private static final String COMMAND_CHALLENGE_END = "challenge-dns-end";
+  private static final String COMMAND_CHALLENGE_STOP = "challenge-dns-stop";
   private static final String HOSTNAME = "hostname";
   private static final String VALUE = "value";
 
@@ -46,12 +46,9 @@ public class Main {
       String command = cmd.getOptionValue(COMMAND);
       String hostname = cmd.getOptionValue(HOSTNAME);
       String value = cmd.getOptionValue(VALUE);
-      if (!COMMAND_CHALLENGE_START.equals(command) &&
-              !COMMAND_CHALLENGE_END.equals(command)) {
-        // exit with a non-zero status to indicate that the command wasn't accepted
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("dnshook", options);
-        System.exit(1);
+      if (!(COMMAND_CHALLENGE_START.equals(command) || COMMAND_CHALLENGE_STOP.equals(command))) {
+        // exit with status 42 if we cannot process the command
+        System.exit(42);
       }
       String configurationPath = cmd.getOptionValue(CONFIGURATION);
       if (null == configurationPath || "".equals(configurationPath)) {
@@ -80,8 +77,8 @@ public class Main {
           mLogger.warn("Could not deploy challenge for hostname " + hostname);
           System.exit(1);
         }
-      } else if (COMMAND_CHALLENGE_END.equals(command)) {
-        if (hook.challengeEnd(hostname)) {
+      } else if (COMMAND_CHALLENGE_STOP.equals(command)) {
+        if (hook.challengeStop(hostname)) {
           mLogger.info("Successfully deleted challenge for hostname " + hostname);
           System.exit(0);
         } else {

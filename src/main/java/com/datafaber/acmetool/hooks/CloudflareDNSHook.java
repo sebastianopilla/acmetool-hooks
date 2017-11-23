@@ -205,8 +205,8 @@ public class CloudflareDNSHook implements Hook {
     return dnstools.pollNameserversForChallengeRecordPresence(ACME_CHALLENGE_PREFIX + pHostname, nameservers, mDnsResolutionTimeoutSecs);
   }
 
-  public boolean challengeEnd (String pHostname) {
-    String ctx = "challengeEnd - ";
+  public boolean challengeStop (String pHostname) {
+    String ctx = "challengeStop - ";
     String zoneId = findZoneId(pHostname);
     boolean recordDeleted = deleteChallengeRecord(zoneId, pHostname);
     if (!recordDeleted) {

@@ -28,7 +28,7 @@ import java.util.Properties;
  *  wait for all the nameservers of the zone to get the newly-created TXT record
  *  exit with a non-zero code if not all nameservers were able to update within the configured timeout
  *  exit with a zero code instead if all nameservers updated within the configured timeout
- * challengeEnd
+ * challengeStop
  *  delete the _acme-challenge.hostname TXT record
  *  wait for all the nameservers of the zone to remove the newly-created TXT record
  *  exit with a non-zero code if not all nameservers were able to update within the configured timeout
@@ -290,8 +290,8 @@ public class PowerDNSHook implements Hook {
    * @param pHostname hostname to delete the record for
    * @return true if the record was correctly removed from all authoritative nameservers of the zone, false otherwise
    */
-  public boolean challengeEnd (String pHostname) {
-    String ctx = "challengeEnd - ";
+  public boolean challengeStop (String pHostname) {
+    String ctx = "challengeStop - ";
     String serverId = findServerId();
     String zoneId = findZoneId(pHostname, serverId);
     boolean recordDeleted = deleteChallengeRecord(serverId, zoneId, pHostname);
