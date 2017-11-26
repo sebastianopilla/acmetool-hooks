@@ -13,6 +13,9 @@ public class DNSTools {
   // timeout for single query
   private static final int DNS_TIMEOUT_SECS = 5;
 
+  // max number of tries when polling
+  private static final int MAX_POLLING_TRIES = 10;
+
   private Resolver mResolver;
 
   private static Logger mLogger = LogManager.getLogger("com.datafaber.acmetool.DNSTools");
@@ -126,6 +129,7 @@ public class DNSTools {
         resolver.setTimeout(DNS_TIMEOUT_SECS);
         nameservers.add(resolver);
       }
+      int cntTries = 1;
       while (!gotAnswer) {
         int cntAnswers = 0;
         for (Resolver nameserver : nameservers) {
@@ -150,7 +154,8 @@ public class DNSTools {
             }
           }
         }
-        gotAnswer = cntAnswers == nameservers.size();
+        cntTries++;
+        gotAnswer = (cntAnswers == nameservers.size()) || (cntTries == MAX_POLLING_TRIES);
       }
     } catch (UnknownHostException uhe) {
       mLogger.error(ctx + "UnknownHostException while polling for challenge record", uhe);
