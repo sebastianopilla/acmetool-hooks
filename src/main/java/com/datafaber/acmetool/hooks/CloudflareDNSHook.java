@@ -91,6 +91,13 @@ public class CloudflareDNSHook implements Hook {
   }
 
 
+  /**
+   * Creates the _acme-challenge TXT record for the given hostname in the given zone
+   * @param pZoneId zone id
+   * @param pHostname hostname to create the record for
+   * @param pValue value for the TXT record
+   * @return true if the challenge record was created, false otherwise
+   */
   private boolean createChallengeRecord (String pZoneId, String pHostname, String pValue) {
     String ctx = "createChallengeRecord - ";
 
@@ -178,6 +185,13 @@ public class CloudflareDNSHook implements Hook {
     return result;
   }
 
+
+  /**
+   * Entry point for the challenge-start hook
+   * @param pHostname hostname to create the record for
+   * @param pValue challenge value
+   * @return true if the record was correctly deployed on all authoritative nameservers of the zone, false otherwise
+   */
   public boolean challengeStart (String pHostname, String pValue) {
     String ctx = "challengeStart - ";
     String zoneId = findZoneId(pHostname);
@@ -205,6 +219,12 @@ public class CloudflareDNSHook implements Hook {
     return dnstools.pollNameserversForChallengeRecordPresence(ACME_CHALLENGE_PREFIX + pHostname, nameservers, mDnsResolutionTimeoutSecs);
   }
 
+
+  /**
+   * Entry point for the challenge-end hook
+   * @param pHostname hostname to delete the record for
+   * @return true if the record was correctly removed from all authoritative nameservers of the zone, false otherwise
+   */
   public boolean challengeStop (String pHostname) {
     String ctx = "challengeStop - ";
     String zoneId = findZoneId(pHostname);
