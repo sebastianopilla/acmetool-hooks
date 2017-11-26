@@ -4,7 +4,7 @@
 
   <groupId>com.datafaber</groupId>
   <artifactId>acmetool-hooks</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
 
   <name>acmetool-hooks</name>
 
