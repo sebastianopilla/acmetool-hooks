@@ -128,13 +128,31 @@ public class PowerDNSHook implements Hook {
       }
       String body = response.getBody();
       JSONArray zones = new JSONArray(body);
+      String[] hostnameParts = hostname.split("\\.");
       if (zones != null && zones.length() > 0) {
         for (int i = 0; i < zones.length(); i++) {
           JSONObject zone = zones.getJSONObject(i);
           String zoneName = zone.getString("name");
-          if (hostname.contains(zoneName)) {
-            id = zone.getString("id");
-            break;
+          String[] zoneNameParts = zoneName.split("\\.");
+          if (hostnameParts.length == zoneNameParts.length) {
+            // certificate for the zone apex, needs an exact match to find the zone
+            if (hostname.equals(zoneName)) {
+              id = zone.getString("id");
+              break;
+            }
+          } else if (hostnameParts.length > zoneNameParts.length) {
+            // certificate for a host in the zone, needs a contains (substring) match only
+            String hostnameZone = "";
+            for (int j = (hostnameParts.length - zoneNameParts.length); j < hostnameParts.length; j++) {
+              hostnameZone += hostnameParts[j] + ".";
+            }
+            if (hostnameZone.equals(zoneName)) {
+              id = zone.getString("id");
+              break;
+            }
+          } else {
+            // can happen only if given invalid data
+            mLogger.warn(ctx + "could not match hostname " + hostname + " in zone " + zoneName);
           }
         }
       }
