@@ -129,6 +129,7 @@ public class DNSTools {
         resolver.setTimeout(DNS_TIMEOUT_SECS);
         nameservers.add(resolver);
       }
+      mLogger.info(ctx + "begin polling nameservers for challenge record - nameservers = " + nameservers);
       int cntTries = 1;
       while (!gotAnswer) {
         int cntAnswers = 0;
@@ -157,6 +158,7 @@ public class DNSTools {
         cntTries++;
         gotAnswer = (cntAnswers == nameservers.size()) || (cntTries == MAX_POLLING_TRIES);
       }
+      mLogger.info(ctx + "done polling nameservers for challenge record - got answer = " + gotAnswer);
     } catch (UnknownHostException uhe) {
       mLogger.error(ctx + "UnknownHostException while polling for challenge record", uhe);
     } catch (TextParseException tpe) {
