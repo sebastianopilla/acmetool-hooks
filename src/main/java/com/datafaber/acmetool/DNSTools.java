@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.xbill.DNS.*;
 
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -123,42 +124,43 @@ public class DNSTools {
     boolean gotAnswer = false;
 
     try {
-      Set<Resolver> nameservers = new HashSet<Resolver>();
-      for (String nameserver : pNameservers) {
-        Resolver resolver = new SimpleResolver(nameserver);
-        resolver.setTimeout(DNS_TIMEOUT_SECS);
-        nameservers.add(resolver);
-      }
-      mLogger.info(ctx + "begin polling nameservers for challenge record - nameservers = " + nameservers);
+      mLogger.info(ctx + "begin polling nameservers for challenge record - nameservers = " + Arrays.toString(pNameservers));
       int cntTries = 1;
       while (!gotAnswer) {
         int cntAnswers = 0;
-        for (Resolver nameserver : nameservers) {
+        for (String nameserver : pNameservers) {
+          mLogger.info(ctx + "polling nameserver " + nameserver + " - try " + cntTries);
+          Resolver resolver = new SimpleResolver(nameserver);
+          resolver.setTimeout(DNS_TIMEOUT_SECS);
           Lookup lookup = new Lookup(pRecordValue, Type.TXT);
-          lookup.setResolver(nameserver);
+          lookup.setResolver(resolver);
           Record[] records = lookup.run();
           if (pCheckPresence) {
             // checking presence, so no result means we have to try again
             if (records == null || records.length == 0) {
               // this nameserver didn't have the answer, so there's no point in querying the others
               // wait for a while, then try again
+              mLogger.info(ctx + "answer not found on nameserver " + nameserver);
               waitFor(pDnsResolutionTimeoutSecs);
             } else {
+              mLogger.info(ctx + "got expected answer from nameserver " + nameserver);
               cntAnswers++;
             }
           } else {
             // checking absence, so we actually want no result from lookup()
             if (records != null && records.length > 0) {
+              mLogger.info(ctx + "answer not found on nameserver " + nameserver);
               waitFor(pDnsResolutionTimeoutSecs);
             } else {
+              mLogger.info(ctx + "got expected answer from nameserver " + nameserver);
               cntAnswers++;
             }
           }
         }
         cntTries++;
-        gotAnswer = (cntAnswers == nameservers.size()) || (cntTries == MAX_POLLING_TRIES);
+        gotAnswer = (cntAnswers == pNameservers.length) || (cntTries == MAX_POLLING_TRIES);
       }
-      mLogger.info(ctx + "done polling nameservers for challenge record - got answer = " + gotAnswer);
+      mLogger.info(ctx + "done polling nameservers for challenge record");
     } catch (UnknownHostException uhe) {
       mLogger.error(ctx + "UnknownHostException while polling for challenge record", uhe);
     } catch (TextParseException tpe) {
@@ -181,4 +183,5 @@ public class DNSTools {
       // nothing much that can be done here
     }
   }
+
 }
