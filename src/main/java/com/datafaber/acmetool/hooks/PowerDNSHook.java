@@ -276,6 +276,7 @@ public class PowerDNSHook implements Hook {
    */
   public boolean challengeStart (String pHostname, String pValue) {
     String ctx = "challengeStart - ";
+    mLogger.info(ctx + "starting challenge for " + pHostname + " with value = " + pValue);
     String serverId = findServerId();
     String zoneId = findZoneId(pHostname, serverId);
     boolean recordCreated = createChallengeRecord(serverId, zoneId, pHostname, pValue);
@@ -310,6 +311,7 @@ public class PowerDNSHook implements Hook {
    */
   public boolean challengeStop (String pHostname) {
     String ctx = "challengeStop - ";
+    mLogger.info(ctx + "stopping challenge for " + pHostname);
     String serverId = findServerId();
     String zoneId = findZoneId(pHostname, serverId);
     boolean recordDeleted = deleteChallengeRecord(serverId, zoneId, pHostname);
