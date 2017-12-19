@@ -124,17 +124,13 @@ public class DNSTools {
     boolean gotAnswer = false;
 
     try {
-      mLogger.info(ctx + "begin polling nameservers for challenge record - nameservers = " + Arrays.toString(pNameservers));
+      mLogger.info(ctx + "begin polling nameservers for challenge record '" + pRecordValue + "' - nameservers = " + Arrays.toString(pNameservers));
       int cntTries = 1;
-      while (!gotAnswer) {
+      while (!gotAnswer && cntTries <= MAX_POLLING_TRIES) {
         int cntAnswers = 0;
         for (String nameserver : pNameservers) {
           mLogger.info(ctx + "polling nameserver " + nameserver + " - try " + cntTries);
-          Resolver resolver = new SimpleResolver(nameserver);
-          resolver.setTimeout(DNS_TIMEOUT_SECS);
-          Lookup lookup = new Lookup(pRecordValue, Type.TXT);
-          lookup.setResolver(resolver);
-          Record[] records = lookup.run();
+          Record[] records = resolveName(pRecordValue, nameserver);
           if (pCheckPresence) {
             // checking presence, so no result means we have to try again
             if (records == null || records.length == 0) {
@@ -158,9 +154,9 @@ public class DNSTools {
           }
         }
         cntTries++;
-        gotAnswer = (cntAnswers == pNameservers.length) || (cntTries == MAX_POLLING_TRIES);
+        gotAnswer = (cntAnswers == pNameservers.length);
       }
-      mLogger.info(ctx + "done polling nameservers for challenge record");
+      mLogger.info(ctx + "done polling nameservers for challenge record - got answer = " + gotAnswer);
     } catch (UnknownHostException uhe) {
       mLogger.error(ctx + "UnknownHostException while polling for challenge record", uhe);
     } catch (TextParseException tpe) {
@@ -168,6 +164,24 @@ public class DNSTools {
     }
 
     return gotAnswer;
+  }
+
+
+  /**
+   * Resolves the given name at the given nameserver
+   * @param pName name to be resolved
+   * @param pNameserver nameserver to use
+   * @return records resulting from the lookup or null if not found
+   * @throws UnknownHostException if errors
+   * @throws TextParseException if errors
+   */
+  private Record[] resolveName (String pName, String pNameserver) throws UnknownHostException, TextParseException {
+    Resolver resolver = new SimpleResolver(pNameserver);
+    resolver.setTimeout(DNS_TIMEOUT_SECS);        // set a timeout to avoid waiting forever for a lookup
+    Lookup lookup = new Lookup(pName, Type.TXT);
+    lookup.setResolver(resolver);
+    lookup.setCache(null);                        // no cache for those lookups
+    return lookup.run();
   }
 
 
